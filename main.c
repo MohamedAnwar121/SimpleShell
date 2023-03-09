@@ -65,6 +65,7 @@ char *handleDollarSign(string input) {
     temp.arr = (char *) malloc(MAX_STRING_SIZE * sizeof(char));
     temp.length = 0;
 
+
     char *result;
     result = (char *) malloc(MAX_STRING_SIZE * sizeof(char));
     int size = 0;
@@ -82,15 +83,22 @@ char *handleDollarSign(string input) {
             if (s.arr[i] != ' ') temp.arr[temp.length++] = s.arr[i];
             else {
                 visited--;
+                temp.arr[temp.length] = '\0';
                 if (findInTable(temp.arr, var_table) != -1) {
                     int index = findInTable(temp.arr, var_table);
                     string rest_of_result = var_table.variables[index].value;
-
                     for (int j = 0; j < rest_of_result.length; ++j) result[size++] = rest_of_result.arr[j];
                 }
+                result[size++] = ' ';
+
+                free(temp.arr);
+                temp.arr = (char *) malloc(MAX_STRING_SIZE * sizeof(char));
+                temp.length = 0;
             }
         }
     }
+
+    result[size] = '\0';
 
     return result;
 }
@@ -201,10 +209,15 @@ void execute_command(string s) {
     stringArray strings = splitString(s);
     char **commands = stringArrayTo2DChar(strings);
 
-    if (!strcmp(commands[strings.length - 1], "&")) background = 1;
+    if (!strcmp(commands[strings.length - 1], "&")) {
+        background = 1;
+        commands[strings.length - 1] = NULL;
+    } else {
+        commands = realloc(commands, (strings.length + 1) * sizeof(char **));
+        commands[strings.length] = NULL;
+    }
 
-    commands = realloc(commands, (strings.length + 1) * sizeof(char **));
-    commands[strings.length] = NULL;
+
 
     pid = fork();
 
